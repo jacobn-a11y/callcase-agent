@@ -293,7 +293,9 @@ function renderStoryTypes(
 ): string {
   return [
     `Story types available: ${storyTypes.length}`,
-    ...storyTypes.map((item) => `- ${item.id}: ${item.name} [${item.stage}]`),
+    ...storyTypes.map((item) => {
+      return `- ${item.id}: ${item.name} [${item.stage}] | objective=${item.spec.objective} | minQuotes=${item.spec.minimumQuoteCount} | minClaims=${item.spec.minimumClaimCount}`;
+    }),
   ].join("\n");
 }
 

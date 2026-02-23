@@ -16,4 +16,15 @@ describe("use case catalog", () => {
     const ids = USE_CASES.map((u) => u.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  it("includes explicit spec contracts for each use case", () => {
+    for (const useCase of USE_CASES) {
+      expect(useCase.spec.objective.length).toBeGreaterThan(20);
+      expect(useCase.spec.narrativeAngle.length).toBeGreaterThan(20);
+      expect(useCase.spec.requiredSections.length).toBeGreaterThanOrEqual(8);
+      expect(useCase.spec.requiredEvidenceSignals.length).toBeGreaterThanOrEqual(3);
+      expect(useCase.spec.minimumQuoteCount).toBeGreaterThanOrEqual(2);
+      expect(useCase.spec.minimumClaimCount).toBeGreaterThanOrEqual(1);
+    }
+  });
 });

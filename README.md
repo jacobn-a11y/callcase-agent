@@ -33,6 +33,16 @@ API routes:
 - `GET /openapi.json`
 - `GET /.well-known/ai-plugin.json`
 
+`GET /api/story-types` returns full story specs, including:
+
+- objective
+- narrative angle
+- required evidence signals
+- KPI priority order
+- minimum quote/claim thresholds
+- required output sections
+- forbidden moves
+
 ## ChatGPT Integration (Custom GPT Actions)
 
 Use this when you want a ChatGPT app/skill experience.

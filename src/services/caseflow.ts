@@ -65,6 +65,7 @@ export function listStoryTypes() {
     name: storyType.name,
     stage: storyType.stage,
     focus: storyType.focus,
+    spec: storyType.spec,
   }));
 }
 

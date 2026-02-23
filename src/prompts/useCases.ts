@@ -1,11 +1,260 @@
+export type UseCaseStage =
+  | "TOFU"
+  | "MOFU"
+  | "BOFU"
+  | "POST_SALE"
+  | "INTERNAL"
+  | "VERTICAL"
+  | "FORMAT";
+
+export type EvidenceSignal =
+  | "before_after"
+  | "timeline"
+  | "quant_claim"
+  | "stakeholder_perspective"
+  | "implementation_detail"
+  | "risk_control"
+  | "competitor_comparison";
+
+export type QuantPriority =
+  | "cost_savings"
+  | "revenue"
+  | "time_saved"
+  | "efficiency"
+  | "error_reduction"
+  | "adoption"
+  | "risk"
+  | "roi"
+  | "other";
+
+export interface UseCaseSpec {
+  objective: string;
+  narrativeAngle: string;
+  primaryAudience: string[];
+  requiredEvidenceSignals: EvidenceSignal[];
+  quantitativePriority: QuantPriority[];
+  requiredSections: string[];
+  dataGapQuestions: string[];
+  reusableMessagingOutputs: string[];
+  forbiddenMoves: string[];
+  minimumQuoteCount: number;
+  minimumClaimCount: number;
+}
+
 export interface UseCaseDefinition {
   id: string;
   name: string;
-  stage: "TOFU" | "MOFU" | "BOFU" | "POST_SALE" | "INTERNAL" | "VERTICAL" | "FORMAT";
+  stage: UseCaseStage;
+  focus: string;
+  spec: UseCaseSpec;
+}
+
+interface UseCaseSeed {
+  id: string;
+  name: string;
+  stage: UseCaseStage;
   focus: string;
 }
 
-export const USE_CASES: UseCaseDefinition[] = [
+const REQUIRED_SECTIONS = [
+  "Executive Summary",
+  "Context",
+  "Trigger / Problem",
+  "Evaluation / Decision Dynamics",
+  "Implementation / Adoption",
+  "Outcomes and Metrics",
+  "Quantitative Evidence Table",
+  "Notable Quotes (with direct attribution)",
+  "Risks, Gaps, and What Is Still Unknown",
+  "Reusable Messaging",
+] as const;
+
+const COMMON_FORBIDDEN_MOVES = [
+  "Do not invent numbers, dates, or customer claims.",
+  "Do not claim ROI/payback unless explicit numeric evidence exists.",
+  "Do not present inferred facts as confirmed facts.",
+  "Do not attribute quotes to named speakers unless attribution evidence exists.",
+];
+
+const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narrativeAngle">> = {
+  TOFU: {
+    primaryAudience: ["Product Marketing", "Content Marketing", "Demand Generation"],
+    requiredEvidenceSignals: ["before_after", "timeline", "stakeholder_perspective"],
+    quantitativePriority: ["adoption", "risk", "efficiency", "other"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "What baseline condition existed before change?",
+      "Which macro trigger is evidenced versus inferred?",
+    ],
+    reusableMessagingOutputs: ["Thought-leadership angle", "Awareness narrative bullets"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 3,
+    minimumClaimCount: 2,
+  },
+  MOFU: {
+    primaryAudience: ["Sales Engineering", "Solutions Consulting", "Product Marketing"],
+    requiredEvidenceSignals: [
+      "implementation_detail",
+      "timeline",
+      "quant_claim",
+      "risk_control",
+      "competitor_comparison",
+    ],
+    quantitativePriority: ["time_saved", "efficiency", "error_reduction", "adoption", "risk"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "Which technical constraints were unresolved?",
+      "What implementation milestones are missing dates or owners?",
+    ],
+    reusableMessagingOutputs: ["Evaluation-stage talk track", "Objection-handling bullets"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 3,
+    minimumClaimCount: 3,
+  },
+  BOFU: {
+    primaryAudience: ["AEs", "Revenue Leadership", "Executive Sponsors"],
+    requiredEvidenceSignals: ["quant_claim", "before_after", "timeline", "risk_control"],
+    quantitativePriority: ["roi", "cost_savings", "revenue", "time_saved", "risk"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "Is financial impact net-new, avoided cost, or projected?",
+      "Are payback assumptions explicit and attributable?",
+    ],
+    reusableMessagingOutputs: ["Decision memo bullets", "Executive summary for procurement"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 3,
+    minimumClaimCount: 4,
+  },
+  POST_SALE: {
+    primaryAudience: ["Customer Success", "Account Management", "Product"],
+    requiredEvidenceSignals: ["timeline", "implementation_detail", "stakeholder_perspective", "quant_claim"],
+    quantitativePriority: ["adoption", "efficiency", "risk", "time_saved", "other"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "Which expansion/renewal claims have hard evidence?",
+      "Where are attribution gaps across lifecycle stages?",
+    ],
+    reusableMessagingOutputs: ["Renewal narrative", "Expansion case-study bullets"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 3,
+    minimumClaimCount: 3,
+  },
+  INTERNAL: {
+    primaryAudience: ["Sales Leadership", "RevOps", "Delivery Leadership"],
+    requiredEvidenceSignals: ["stakeholder_perspective", "implementation_detail", "timeline", "quant_claim"],
+    quantitativePriority: ["efficiency", "error_reduction", "adoption", "time_saved", "other"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "Which internal process assumptions are unsupported?",
+      "What evidence is missing to operationalize this lesson?",
+    ],
+    reusableMessagingOutputs: ["Enablement bullet set", "Playbook update suggestions"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 2,
+    minimumClaimCount: 2,
+  },
+  VERTICAL: {
+    primaryAudience: ["Industry GTM", "Field Marketing", "Strategic Sales"],
+    requiredEvidenceSignals: ["stakeholder_perspective", "quant_claim", "risk_control", "before_after"],
+    quantitativePriority: ["risk", "adoption", "roi", "efficiency", "other"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "Which vertical-specific constraints are evidenced versus generic?",
+      "What segment/persona assumptions need direct validation?",
+    ],
+    reusableMessagingOutputs: ["Vertical talk track", "Persona-tailored key points"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 3,
+    minimumClaimCount: 3,
+  },
+  FORMAT: {
+    primaryAudience: ["Content Team", "Executive Comms", "Field Marketing"],
+    requiredEvidenceSignals: ["before_after", "quant_claim", "stakeholder_perspective", "timeline"],
+    quantitativePriority: ["roi", "cost_savings", "revenue", "efficiency", "other"],
+    requiredSections: [...REQUIRED_SECTIONS],
+    dataGapQuestions: [
+      "Does this format have enough concise attributable evidence?",
+      "Which sections should be downgraded due to weak support?",
+    ],
+    reusableMessagingOutputs: ["Portable messaging snippets", "Channel-specific content angles"],
+    forbiddenMoves: [...COMMON_FORBIDDEN_MOVES],
+    minimumQuoteCount: 4,
+    minimumClaimCount: 2,
+  },
+};
+
+type UseCaseOverride = Partial<UseCaseSpec>;
+
+const USE_CASE_OVERRIDES: Record<string, UseCaseOverride> = {
+  roi_financial_outcomes: {
+    objective:
+      "Prove economic value with attributable baseline, delta, and confidence-qualified financial impact.",
+    narrativeAngle: "Lead with financial before/after and payback logic backed by direct evidence.",
+    quantitativePriority: ["roi", "cost_savings", "revenue", "time_saved", "efficiency"],
+    minimumClaimCount: 5,
+  },
+  quantified_operational_metrics: {
+    objective:
+      "Demonstrate operational improvements with concrete metrics and denominator clarity.",
+    narrativeAngle: "Center the narrative on measurable throughput, cycle-time, and quality changes.",
+    quantitativePriority: ["time_saved", "efficiency", "error_reduction", "adoption", "other"],
+    minimumClaimCount: 5,
+  },
+  competitive_displacement: {
+    objective:
+      "Show why the customer switched from a competitor and what measurable change occurred after migration.",
+    narrativeAngle: "Contrast incumbent limitations with post-migration outcomes and adoption trajectory.",
+    requiredEvidenceSignals: [
+      "competitor_comparison",
+      "implementation_detail",
+      "timeline",
+      "quant_claim",
+      "risk_control",
+    ],
+  },
+  pilot_to_production: {
+    objective:
+      "Explain the pilot hypothesis, validation criteria, and production cutover with timeline evidence.",
+    narrativeAngle: "Track milestones from pilot scope to production deployment with accountability details.",
+    requiredEvidenceSignals: ["timeline", "implementation_detail", "quant_claim", "risk_control"],
+  },
+  deployment_speed: {
+    objective:
+      "Quantify speed-to-value against expectations, including what accelerated or slowed deployment.",
+    narrativeAngle: "Compare planned timeline versus actual and attribute causes with direct evidence.",
+    quantitativePriority: ["time_saved", "efficiency", "risk", "other", "adoption"],
+    minimumClaimCount: 4,
+  },
+  by_the_numbers_snapshot: {
+    objective: "Produce a metric-first story that can stand alone as a numbers-backed evidence snapshot.",
+    narrativeAngle: "Minimize prose and maximize attributable metric density and comparability.",
+    quantitativePriority: ["roi", "cost_savings", "revenue", "efficiency", "time_saved"],
+    minimumClaimCount: 6,
+  },
+  video_testimonial_soundbite: {
+    objective:
+      "Curate short, high-impact attributed quotes suitable for executive testimonial snippets.",
+    narrativeAngle: "Quote-first narrative with concise context and explicit confidence cues.",
+    minimumQuoteCount: 6,
+    minimumClaimCount: 1,
+  },
+  peer_reference_call_guide: {
+    objective:
+      "Generate a structured peer-reference talk track with attributable proof points and likely objections.",
+    narrativeAngle: "Organize evidence into reusable peer-call prompts with concise factual anchors.",
+    minimumQuoteCount: 5,
+    minimumClaimCount: 2,
+  },
+  analyst_validated_study: {
+    objective:
+      "Package evidence for external scrutiny with explicit confidence levels, assumptions, and known gaps.",
+    narrativeAngle: "Prioritize verifiability, traceability, and uncertainty labeling over narrative flourish.",
+    requiredEvidenceSignals: ["quant_claim", "risk_control", "timeline", "stakeholder_perspective"],
+    minimumClaimCount: 4,
+  },
+};
+
+const USE_CASE_SEEDS: UseCaseSeed[] = [
   { id: "industry_trend_validation", name: "Industry Trend Validation", stage: "TOFU", focus: "How the customer navigated a macro shift." },
   { id: "problem_challenge_identification", name: "Problem/Challenge Identification", stage: "TOFU", focus: "Day-in-the-life pain point before the solution." },
   { id: "digital_transformation_modernization", name: "Digital Transformation Journey", stage: "TOFU", focus: "Modernization outcomes and transformation milestones." },
@@ -60,5 +309,26 @@ export const USE_CASES: UseCaseDefinition[] = [
   { id: "video_testimonial_soundbite", name: "Video/Testimonial Soundbite", stage: "FORMAT", focus: "Short executive-ready quote package." },
   { id: "joint_webinar_presentation", name: "Joint Webinar/Conference", stage: "FORMAT", focus: "Talk track for co-presentations." },
   { id: "peer_reference_call_guide", name: "Peer Reference Call Guide", stage: "FORMAT", focus: "Structured peer reference call script." },
-  { id: "analyst_validated_study", name: "Analyst/Third-Party Validated Study", stage: "FORMAT", focus: "Evidence pack tuned for third-party review." }
+  { id: "analyst_validated_study", name: "Analyst/Third-Party Validated Study", stage: "FORMAT", focus: "Evidence pack tuned for third-party review." },
 ];
+
+export const USE_CASES: UseCaseDefinition[] = USE_CASE_SEEDS.map((seed) => {
+  const stageProfile = STAGE_PROFILE[seed.stage];
+  const override = USE_CASE_OVERRIDES[seed.id] ?? {};
+
+  const spec: UseCaseSpec = {
+    ...stageProfile,
+    objective:
+      override.objective ??
+      `Create a ${seed.name.toLowerCase()} narrative that is fully traceable to transcript evidence.`,
+    narrativeAngle:
+      override.narrativeAngle ??
+      `Emphasize this focus: ${seed.focus.replace(/\.$/, "")}.`,
+    ...override,
+  };
+
+  return {
+    ...seed,
+    spec,
+  };
+});

@@ -47,6 +47,10 @@ export class CaseStudyGenerator {
       .join("\n");
 
     for (const useCase of useCases) {
+      const requiredStructure = useCase.spec.requiredSections
+        .map((section) => `## ${section}`)
+        .join("\n");
+
       const response = await this.openai.chat.completions.create({
         model: this.model,
         temperature: 0.2,
@@ -54,7 +58,42 @@ export class CaseStudyGenerator {
           { role: "system", content: CASE_STUDY_SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Generate a case study variant for:\n- Use Case ID: ${useCase.id}\n- Use Case Name: ${useCase.name}\n- Funnel/Type: ${useCase.stage}\n- Focus: ${useCase.focus}\n\nRequired structure:\n# ${useCase.name}\n## Executive Summary\n## Context\n## Trigger / Problem\n## Evaluation / Decision Dynamics\n## Implementation / Adoption\n## Outcomes and Metrics\n## Quantitative Evidence Table\n## Notable Quotes (with direct attribution)\n## Risks, Gaps, and What Is Still Unknown\n## Reusable Messaging\n\nCall index:\n${callSummary}\n\nExtracted quotes with attribution:\n${quoteContext || "No extracted quotes"}\n\nExtracted quantitative claims with attribution:\n${claimContext || "No extracted claims"}\n\nMerged transcript corpus:\n${mergedMarkdown}`,
+            content: `Generate a case study variant for:
+- Use Case ID: ${useCase.id}
+- Use Case Name: ${useCase.name}
+- Funnel/Type: ${useCase.stage}
+- Focus: ${useCase.focus}
+
+Specification:
+- Objective: ${useCase.spec.objective}
+- Narrative angle: ${useCase.spec.narrativeAngle}
+- Primary audience: ${useCase.spec.primaryAudience.join(", ")}
+- Required evidence signals: ${useCase.spec.requiredEvidenceSignals.join(", ")}
+- KPI priority order: ${useCase.spec.quantitativePriority.join(", ")}
+- Minimum direct quotes: ${useCase.spec.minimumQuoteCount}
+- Minimum quantitative claims: ${useCase.spec.minimumClaimCount}
+- Data gap questions:
+${useCase.spec.dataGapQuestions.map((item) => `  - ${item}`).join("\n")}
+- Reusable messaging outputs:
+${useCase.spec.reusableMessagingOutputs.map((item) => `  - ${item}`).join("\n")}
+- Forbidden moves:
+${useCase.spec.forbiddenMoves.map((item) => `  - ${item}`).join("\n")}
+
+Required structure:
+# ${useCase.name}
+${requiredStructure}
+
+Call index:
+${callSummary}
+
+Extracted quotes with attribution:
+${quoteContext || "No extracted quotes"}
+
+Extracted quantitative claims with attribution:
+${claimContext || "No extracted claims"}
+
+Merged transcript corpus:
+${mergedMarkdown}`,
           },
         ],
       });

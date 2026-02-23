@@ -40,14 +40,7 @@ export function buildOpenApiDocument(baseUrl: string) {
                       storyTypes: {
                         type: "array",
                         items: {
-                          type: "object",
-                          properties: {
-                            id: { type: "string" },
-                            name: { type: "string" },
-                            stage: { type: "string" },
-                            focus: { type: "string" },
-                          },
-                          required: ["id", "name", "stage", "focus"],
+                          $ref: "#/components/schemas/StoryType",
                         },
                       },
                     },
@@ -171,6 +164,67 @@ export function buildOpenApiDocument(baseUrl: string) {
     },
     components: {
       schemas: {
+        StoryType: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            stage: { type: "string" },
+            focus: { type: "string" },
+            spec: { $ref: "#/components/schemas/StoryTypeSpec" },
+          },
+          required: ["id", "name", "stage", "focus", "spec"],
+        },
+        StoryTypeSpec: {
+          type: "object",
+          properties: {
+            objective: { type: "string" },
+            narrativeAngle: { type: "string" },
+            primaryAudience: {
+              type: "array",
+              items: { type: "string" },
+            },
+            requiredEvidenceSignals: {
+              type: "array",
+              items: { type: "string" },
+            },
+            quantitativePriority: {
+              type: "array",
+              items: { type: "string" },
+            },
+            requiredSections: {
+              type: "array",
+              items: { type: "string" },
+            },
+            dataGapQuestions: {
+              type: "array",
+              items: { type: "string" },
+            },
+            reusableMessagingOutputs: {
+              type: "array",
+              items: { type: "string" },
+            },
+            forbiddenMoves: {
+              type: "array",
+              items: { type: "string" },
+            },
+            minimumQuoteCount: { type: "integer" },
+            minimumClaimCount: { type: "integer" },
+          },
+          required: [
+            "objective",
+            "narrativeAngle",
+            "primaryAudience",
+            "requiredEvidenceSignals",
+            "quantitativePriority",
+            "requiredSections",
+            "dataGapQuestions",
+            "reusableMessagingOutputs",
+            "forbiddenMoves",
+            "minimumQuoteCount",
+            "minimumClaimCount",
+          ],
+        },
         DiscoverRequest: {
           type: "object",
           properties: {
