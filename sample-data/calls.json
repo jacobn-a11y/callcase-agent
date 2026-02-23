@@ -1,0 +1,89 @@
+{
+  "calls": [
+    {
+      "provider": "gong",
+      "providerCallId": "gong-001",
+      "accountId": "acct-123",
+      "accountName": "Northstar Logistics",
+      "title": "Pilot Outcomes Review",
+      "occurredAt": "2026-01-18T16:00:00Z",
+      "durationSeconds": 3600,
+      "participants": [
+        {
+          "name": "Alex Rivera",
+          "email": "alex@northstar.example",
+          "role": "host"
+        },
+        {
+          "name": "Dana Scott",
+          "email": "dana@vendor.example",
+          "role": "participant"
+        }
+      ],
+      "transcriptText": "Before rollout, invoice processing took 12 days end-to-end. In the pilot, we cut that to 4 days, a 66% improvement. We also reduced billing errors by 38% in Q4. We estimate this saves about $420,000 annually.",
+      "segments": [
+        {
+          "speaker": "Alex Rivera",
+          "text": "Before rollout, invoice processing took 12 days end-to-end.",
+          "startMs": 12000,
+          "endMs": 20000
+        },
+        {
+          "speaker": "Alex Rivera",
+          "text": "In the pilot, we cut that to 4 days, a 66% improvement.",
+          "startMs": 21000,
+          "endMs": 28000
+        },
+        {
+          "speaker": "Alex Rivera",
+          "text": "We also reduced billing errors by 38% in Q4.",
+          "startMs": 30000,
+          "endMs": 36000
+        },
+        {
+          "speaker": "Alex Rivera",
+          "text": "We estimate this saves about $420,000 annually.",
+          "startMs": 38000,
+          "endMs": 45000
+        }
+      ]
+    },
+    {
+      "provider": "gong",
+      "providerCallId": "gong-002",
+      "accountId": "acct-123",
+      "accountName": "Northstar Logistics",
+      "title": "Executive Renewal Discussion",
+      "occurredAt": "2026-02-07T18:30:00Z",
+      "durationSeconds": 3000,
+      "participants": [
+        {
+          "name": "Morgan Lee",
+          "email": "morgan@northstar.example",
+          "role": "host"
+        }
+      ],
+      "transcriptText": "The board asked for clear payback, and we showed an 8-month payback period. Adoption is now at 74% across operations and finance. We want to expand this to two more regions next quarter.",
+      "segments": [
+        {
+          "speaker": "Morgan Lee",
+          "text": "The board asked for clear payback, and we showed an 8-month payback period.",
+          "startMs": 10000,
+          "endMs": 19000
+        },
+        {
+          "speaker": "Morgan Lee",
+          "text": "Adoption is now at 74% across operations and finance.",
+          "startMs": 20000,
+          "endMs": 26000
+        },
+        {
+          "speaker": "Morgan Lee",
+          "text": "We want to expand this to two more regions next quarter.",
+          "startMs": 28000,
+          "endMs": 35000
+        }
+      ]
+    }
+  ]
+}
