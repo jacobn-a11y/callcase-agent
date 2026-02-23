@@ -1,103 +1,78 @@
-# CallCase Agent
+# CallCase Agent Webapp
 
-`CallCase Agent` is a standalone repo that pulls call transcripts, exports a Markdown corpus, extracts evidence, and generates case-study variants across TOFU/MOFU/BOFU/Post-Sale/Internal/Vertical/Format use cases.
+Simple local webapp to:
 
-## What It Does
+1. Enter Gong + Grain + OpenAI keys
+2. Discover deduped shared accounts/companies across Gong and Grain
+3. Choose account + story type
+4. Build the story
+5. Write merged call markdown to your Downloads folder as:
+   - `~/Downloads/<Account Name>.md`
 
-1. Ingests transcripts from `gong`, `grain`, `gong_grain`, `merge`, or `json`.
-2. Discovers account/company names directly from provider data.
-3. In `gong_grain` mode, shows only accounts found in both services as a menu to choose from.
-4. Writes one Markdown file per call.
-5. De-duplicates overlapping calls across Gong and Grain.
-6. Writes one merged Markdown corpus per account.
-7. Extracts:
-   - Verbatim customer quotes
-   - Quantitative claims (facts, figures, metrics)
-   - Direct attribution (`speaker`, `sourceCallId`, `sourceCallTitle`, `sourceCallDate`, `sourceTimestampMs`)
-8. Generates a full set of case-study variants for the use-case taxonomy.
+It also writes the generated story markdown to Downloads as:
 
-## Why Expanded Prompting Is Included
+- `~/Downloads/<Account Name> - <Story Type>.md`
 
-This repo uses strict extraction prompts and validation because generic summarization prompts are not enough for reliable quote/metric extraction. The extraction stage enforces:
-
-- Verbatim-only quote extraction
-- Structured quantitative claims
-- Evidence quote requirement for each claim
-- Confidence scoring
-- Post-LLM validation to reject unsupported items
-- Attribution backfill from transcript segments when the model omits speaker/timestamp
-
-## Project Structure
-
-- `/src/providers` provider adapters (`gong`, `grain`, `merge`, `json`, composite)
-- `/src/pipeline/dedupe.ts` cross-provider duplicate suppression
-- `/src/pipeline/markdown.ts` per-call + merged markdown
-- `/src/pipeline/quotes.ts` quote + quantitative claim extraction
-- `/src/pipeline/caseStudies.ts` per-use-case generation
-- `/src/prompts/useCases.ts` complete use-case catalog
-- `/src/agent/runCaseStudyAgent.ts` orchestrator
-
-## Setup
+## Quick Start
 
 ```bash
 npm install
-cp .env.example .env
+npm run dev
 ```
 
-## Environment
+Open:
 
-Required:
+- `http://localhost:3080`
 
-- `OPENAI_API_KEY`
+## UI Flow
 
-Provider configuration:
+1. Paste credentials in the web form.
+2. Click **Discover Shared Accounts**.
+3. Pick one account from the shared Gong+Grain menu.
+4. Pick a story type.
+5. Click **Build Story**.
 
-- `PROVIDER=gong_grain` with Gong + Grain credentials
-- `PROVIDER=gong` with Gong credentials
-- `PROVIDER=grain` with Grain credentials
-- `PROVIDER=merge` with Merge credentials
-- `PROVIDER=json` with `JSON_INPUT_FILE`
+## What Happens Under the Hood
 
-## Run
+- Pulls calls/transcripts from Gong and Grain.
+- Matches account/company names across both providers using:
+  - exact normalization
+  - heuristic fuzzy matching
+  - optional OpenAI-assisted reconciliation for unresolved names
+- Merges and de-duplicates duplicate calls across providers.
+- Extracts verbatim quotes + quantitative claims with attribution:
+  - `speaker`
+  - `sourceCallId`
+  - `sourceCallTitle`
+  - `sourceCallDate`
+  - `sourceTimestampMs`
+- Generates a case-study markdown for the selected story type.
 
-### Gong + Grain with account menu (shared accounts only)
+## Output Files
+
+Primary outputs in Downloads:
+
+- `~/Downloads/<Account Name>.md`
+- `~/Downloads/<Account Name> - <Story Type>.md`
+
+Additional diagnostic outputs in repo workspace:
+
+- `output-web/<account>/calls/*.md`
+- `output-web/<account>/merged/all-calls.md`
+- `output-web/<account>/dedupe/duplicates.json`
+
+## Environment (Optional Defaults)
+
+You can still set defaults in `.env`:
+
+- `PORT` (default `3080`)
+
+Credentials are entered directly in the UI and are not persisted by the app.
+
+## CLI (Optional)
+
+Legacy CLI remains available:
 
 ```bash
-PROVIDER=gong_grain OPENAI_API_KEY=<key> GONG_ACCESS_KEY=<key> GONG_ACCESS_KEY_SECRET=<secret> GRAIN_API_TOKEN=<token> npm run dev
-```
-
-### Gong only
-
-```bash
-PROVIDER=gong OPENAI_API_KEY=<key> GONG_ACCESS_KEY=<key> GONG_ACCESS_KEY_SECRET=<secret> npm run dev -- --account-name "Northstar Logistics"
-```
-
-### Grain only
-
-```bash
-PROVIDER=grain OPENAI_API_KEY=<key> GRAIN_API_TOKEN=<token> npm run dev -- --account-name "Northstar Logistics"
-```
-
-### JSON mode (local sample)
-
-```bash
-PROVIDER=json JSON_INPUT_FILE=./sample-data/calls.json OPENAI_API_KEY=<key> npm run dev -- --account-name "Northstar Logistics"
-```
-
-## Output
-
-By default, output is written under `output/<account-slug>/`:
-
-- `calls/*.md` per-call transcript markdown
-- `merged/all-calls.md` consolidated markdown corpus
-- `quotes/quotes.json` verbatim quotes with direct attribution
-- `claims/claims.json` quantitative claims with direct attribution
-- `dedupe/duplicates.json` duplicate resolution report (Gong/Grain overlap)
-- `case-studies/*.md` one file per use case
-- `manifest.json` run summary
-
-## Tests
-
-```bash
-npm test
+npm run cli -- --provider gong_grain --account-name "Acme"
 ```
