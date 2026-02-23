@@ -67,6 +67,7 @@ export class CaseStudyGenerator {
 Specification:
 - Objective: ${useCase.spec.objective}
 - Narrative angle: ${useCase.spec.narrativeAngle}
+- Backend saved prompt: ${useCase.spec.backendPromptTemplate}
 - Primary audience: ${useCase.spec.primaryAudience.join(", ")}
 - Required evidence signals: ${useCase.spec.requiredEvidenceSignals.join(", ")}
 - KPI priority order: ${useCase.spec.quantitativePriority.join(", ")}

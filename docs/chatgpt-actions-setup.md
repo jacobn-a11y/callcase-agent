@@ -22,6 +22,7 @@ https://<public-domain>/openapi.json
 5. Test these operations in order:
    - `listStoryTypes`
    - `discoverSharedAccounts`
+   - `exportAccountCorpus`
    - `buildCaseStudyStory`
 
 Reference endpoints:

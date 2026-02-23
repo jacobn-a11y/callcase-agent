@@ -8,11 +8,13 @@ import {
   asErrorMessage,
   buildStory,
   discoverSharedAccounts,
+  exportAccountCorpus,
   listStoryTypes,
 } from "../services/caseflow.js";
 import {
   BuildRequestSchema,
   DiscoverRequestSchema,
+  ExportRequestSchema,
   SelectedAccountSchema,
 } from "../services/contracts.js";
 import type { SharedAccountOption } from "../webapp/account-matcher.js";
@@ -44,17 +46,31 @@ const CommonInputShape = {
   maxCalls: z.number().int().positive().max(5000).optional().describe("Max calls to process."),
 } as const;
 
-const BuildToolSchema = z
-  .object({
-    ...CommonInputShape,
+const AccountSelectionInputBaseSchema = z.object({
+  ...CommonInputShape,
+  accountDisplayName: z
+    .string()
+    .optional()
+    .describe("Account/company name from discover_shared_accounts."),
+  selectedAccount: SelectedAccountSchema.optional().describe(
+    "Optional full selected account object from discover_shared_accounts."
+  ),
+});
+
+const AccountSelectionInputSchema = AccountSelectionInputBaseSchema
+  .superRefine((value, ctx) => {
+    if (!value.accountDisplayName && !value.selectedAccount) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["accountDisplayName"],
+        message: "Provide accountDisplayName or selectedAccount.",
+      });
+    }
+  });
+
+const BuildToolSchema = AccountSelectionInputBaseSchema
+  .extend({
     storyTypeId: z.string().min(1).describe("Use one value from list_story_types."),
-    accountDisplayName: z
-      .string()
-      .optional()
-      .describe("Account/company name from discover_shared_accounts."),
-    selectedAccount: SelectedAccountSchema.optional().describe(
-      "Optional full selected account object from discover_shared_accounts."
-    ),
   })
   .superRefine((value, ctx) => {
     if (!value.accountDisplayName && !value.selectedAccount) {
@@ -65,6 +81,11 @@ const BuildToolSchema = z
       });
     }
   });
+
+const BuildToolInputShape = {
+  ...AccountSelectionInputBaseSchema.shape,
+  storyTypeId: z.string().min(1).describe("Use one value from list_story_types."),
+} as const;
 
 server.registerTool(
   "list_story_types",
@@ -115,12 +136,50 @@ server.registerTool(
 );
 
 server.registerTool(
+  "prepare_account_corpus",
+  {
+    title: "Prepare Account Corpus",
+    description:
+      "First step: export merged markdown of all deduped calls for a selected shared account into Downloads, and return categorized story options.",
+    inputSchema: AccountSelectionInputBaseSchema.shape,
+  },
+  async (args) => {
+    try {
+      const parsed = AccountSelectionInputSchema.parse(withEnvDefaults(args));
+
+      const selectedAccount =
+        parsed.selectedAccount ??
+        (await resolveSelectedAccount(parsed.accountDisplayName!, parsed));
+
+      const exportInput = ExportRequestSchema.parse({
+        ...parsed,
+        selectedAccount,
+      });
+
+      const result = await exportAccountCorpus(exportInput);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: renderPreparedCorpusResult(result),
+          },
+        ],
+        structuredContent: toStructuredContent(result),
+      };
+    } catch (error) {
+      return toolError(error);
+    }
+  }
+);
+
+server.registerTool(
   "build_story_for_account",
   {
     title: "Build Account Story",
     description:
-      "Build one story type for a shared account, write markdown files, and return the generated case-study markdown.",
-    inputSchema: BuildToolSchema.shape,
+      "Build one story type for a shared account, write story + quote CSV to Downloads, and return the story markdown in chat.",
+    inputSchema: BuildToolInputShape,
   },
   async (args) => {
     try {
@@ -237,7 +296,10 @@ async function resolveSelectedAccount(
     .sort((a, b) => b.score - a.score);
 
   const best = ranked[0];
-  if (best && best.score >= 0.82) {
+  const second = ranked[1];
+  const scoreGap = best && second ? best.score - second.score : 1;
+
+  if (best && (best.score >= 0.82 || (best.score >= 0.72 && scoreGap >= 0.08))) {
     return toSelectedAccount(best.account);
   }
 
@@ -263,9 +325,20 @@ function toSelectedAccount(account: SharedAccountOption): z.infer<typeof Selecte
 
 function bestNameSimilarity(account: SharedAccountOption, normalizedRequested: string): number {
   return Math.max(
-    tokenSimilarity(normalizeAccountName(account.displayName), normalizedRequested),
-    tokenSimilarity(normalizeAccountName(account.gongName), normalizedRequested),
-    tokenSimilarity(normalizeAccountName(account.grainName), normalizedRequested)
+    smartNameSimilarity(normalizeAccountName(account.displayName), normalizedRequested),
+    smartNameSimilarity(normalizeAccountName(account.gongName), normalizedRequested),
+    smartNameSimilarity(normalizeAccountName(account.grainName), normalizedRequested)
+  );
+}
+
+function smartNameSimilarity(aRaw: string, bRaw: string): number {
+  const a = stripCompanySuffixes(aRaw);
+  const b = stripCompanySuffixes(bRaw);
+
+  return Math.max(
+    tokenSimilarity(a, b),
+    normalizedEditSimilarity(a, b),
+    normalizedPrefixSimilarity(a, b)
   );
 }
 
@@ -288,15 +361,74 @@ function tokenSimilarity(a: string, b: string): number {
   return overlap / Math.max(tokensA.size, tokensB.size);
 }
 
+function normalizedPrefixSimilarity(a: string, b: string): number {
+  if (!a || !b) return 0;
+  const minLen = Math.min(a.length, b.length);
+  let prefix = 0;
+  while (prefix < minLen && a[prefix] === b[prefix]) {
+    prefix += 1;
+  }
+  return prefix / Math.max(a.length, b.length);
+}
+
+function normalizedEditSimilarity(a: string, b: string): number {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const dist = levenshteinDistance(a, b);
+  return 1 - dist / Math.max(a.length, b.length);
+}
+
+function stripCompanySuffixes(input: string): string {
+  return input
+    .replace(/\b(inc|incorporated|llc|ltd|limited|corp|corporation|company|co|plc|gmbh|sa|ag)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const dp: number[][] = Array.from({ length: rows }, () => new Array<number>(cols).fill(0));
+
+  for (let i = 0; i < rows; i += 1) dp[i][0] = i;
+  for (let j = 0; j < cols; j += 1) dp[0][j] = j;
+
+  for (let i = 1; i < rows; i += 1) {
+    for (let j = 1; j < cols; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return dp[a.length][b.length];
+}
+
 function renderStoryTypes(
   storyTypes: ReturnType<typeof listStoryTypes>
 ): string {
-  return [
-    `Story types available: ${storyTypes.length}`,
-    ...storyTypes.map((item) => {
-      return `- ${item.id}: ${item.name} [${item.stage}] | objective=${item.spec.objective} | minQuotes=${item.spec.minimumQuoteCount} | minClaims=${item.spec.minimumClaimCount}`;
-    }),
-  ].join("\n");
+  const grouped = new Map<string, ReturnType<typeof listStoryTypes>>();
+  for (const item of storyTypes) {
+    const bucket = grouped.get(item.stage) ?? [];
+    bucket.push(item);
+    grouped.set(item.stage, bucket);
+  }
+
+  const lines: string[] = [`Story types available: ${storyTypes.length}`];
+  for (const [stage, items] of grouped.entries()) {
+    lines.push(`\n${stage}:`);
+    for (const item of items) {
+      lines.push(
+        `- ${item.id}: ${item.name} | objective=${item.spec.objective} | minQuotes=${item.spec.minimumQuoteCount} | minClaims=${item.spec.minimumClaimCount}`
+      );
+    }
+  }
+
+  lines.push("\nAsk the user to choose one story type id.");
+  return lines.join("\n");
 }
 
 function renderAccountsResult(result: Awaited<ReturnType<typeof discoverSharedAccounts>>): string {
@@ -320,15 +452,34 @@ function renderBuildResult(result: Awaited<ReturnType<typeof buildStory>>): stri
     `Calls after dedupe: ${result.callsAfterDedupe}`,
     `Duplicates removed: ${result.duplicatesRemoved}`,
     `Quotes extracted: ${result.quotesExtracted}`,
+    `Quote CSV rows: ${result.quoteCsvRows}`,
     `Claims extracted: ${result.claimsExtracted}`,
     `Merged markdown file: ${result.markdownDownloadsPath}`,
     `Story markdown file: ${result.storyDownloadsPath}`,
+    `Quotes CSV file: ${result.quotesCsvDownloadsPath}`,
     "",
     "Generated story markdown:",
     result.storyMarkdown,
   ];
 
   return lines.join("\n");
+}
+
+function renderPreparedCorpusResult(result: Awaited<ReturnType<typeof exportAccountCorpus>>): string {
+  const storyOptions = renderStoryTypes(result.storyTypeOptions);
+
+  return [
+    `Prepared corpus for ${result.accountName}.`,
+    `Calls fetched: ${result.callsFetched}`,
+    `Calls after dedupe: ${result.callsAfterDedupe}`,
+    `Duplicates removed: ${result.duplicatesRemoved}`,
+    `Merged markdown written to Downloads: ${result.markdownDownloadsPath}`,
+    "",
+    "Story type options by category:",
+    storyOptions,
+    "",
+    "Ask the user which story type id they want, then call build_story_for_account.",
+  ].join("\n");
 }
 
 function toolError(error: unknown) {

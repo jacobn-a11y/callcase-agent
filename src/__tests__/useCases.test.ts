@@ -21,6 +21,7 @@ describe("use case catalog", () => {
     for (const useCase of USE_CASES) {
       expect(useCase.spec.objective.length).toBeGreaterThan(20);
       expect(useCase.spec.narrativeAngle.length).toBeGreaterThan(20);
+      expect(useCase.spec.backendPromptTemplate.length).toBeGreaterThan(20);
       expect(useCase.spec.requiredSections.length).toBeGreaterThanOrEqual(8);
       expect(useCase.spec.requiredEvidenceSignals.length).toBeGreaterThanOrEqual(3);
       expect(useCase.spec.minimumQuoteCount).toBeGreaterThanOrEqual(2);

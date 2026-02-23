@@ -26,3 +26,10 @@ The launcher script starts:
 - `npm run mcp --prefix <repo-path>`
 
 This executes the TypeScript MCP server at `src/mcp/server.ts`.
+
+Primary MCP sequence:
+
+1. `discover_shared_accounts`
+2. `prepare_account_corpus` (writes all-calls markdown to Downloads)
+3. `list_story_types` (grouped options)
+4. `build_story_for_account` (returns story markdown + writes story and quotes CSV to Downloads)

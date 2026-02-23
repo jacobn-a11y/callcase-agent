@@ -100,6 +100,37 @@ export function buildOpenApiDocument(baseUrl: string) {
           },
         },
       },
+      "/api/accounts/export-markdown": {
+        post: {
+          operationId: "exportAccountCorpus",
+          summary:
+            "Export merged markdown of all deduped calls for one selected shared account into Downloads before story generation",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ExportRequest",
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Corpus export output",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ExportCorpusResult",
+                  },
+                },
+              },
+            },
+            "400": { $ref: "#/components/responses/ErrorResponse" },
+            "500": { $ref: "#/components/responses/ErrorResponse" },
+          },
+        },
+      },
       "/api/stories/build": {
         post: {
           operationId: "buildCaseStudyStory",
@@ -123,6 +154,7 @@ export function buildOpenApiDocument(baseUrl: string) {
                     type: "object",
                     properties: {
                       accountName: { type: "string" },
+                      accountId: { type: "string" },
                       storyType: {
                         type: "object",
                         properties: {
@@ -136,21 +168,26 @@ export function buildOpenApiDocument(baseUrl: string) {
                       duplicatesRemoved: { type: "integer" },
                       markdownDownloadsPath: { type: "string" },
                       storyDownloadsPath: { type: "string" },
+                      quotesCsvDownloadsPath: { type: "string" },
                       storyMarkdown: { type: "string" },
                       quotesExtracted: { type: "integer" },
                       claimsExtracted: { type: "integer" },
+                      quoteCsvRows: { type: "integer" },
                     },
                     required: [
                       "accountName",
+                      "accountId",
                       "storyType",
                       "callsFetched",
                       "callsAfterDedupe",
                       "duplicatesRemoved",
                       "markdownDownloadsPath",
                       "storyDownloadsPath",
+                      "quotesCsvDownloadsPath",
                       "storyMarkdown",
                       "quotesExtracted",
                       "claimsExtracted",
+                      "quoteCsvRows",
                     ],
                   },
                 },
@@ -180,6 +217,7 @@ export function buildOpenApiDocument(baseUrl: string) {
           properties: {
             objective: { type: "string" },
             narrativeAngle: { type: "string" },
+            backendPromptTemplate: { type: "string" },
             primaryAudience: {
               type: "array",
               items: { type: "string" },
@@ -214,6 +252,7 @@ export function buildOpenApiDocument(baseUrl: string) {
           required: [
             "objective",
             "narrativeAngle",
+            "backendPromptTemplate",
             "primaryAudience",
             "requiredEvidenceSignals",
             "quantitativePriority",
@@ -280,6 +319,54 @@ export function buildOpenApiDocument(baseUrl: string) {
               },
               required: ["openaiApiKey", "storyTypeId", "selectedAccount"],
             },
+          ],
+        },
+        ExportRequest: {
+          allOf: [
+            {
+              $ref: "#/components/schemas/DiscoverRequest",
+            },
+            {
+              type: "object",
+              properties: {
+                selectedAccount: { $ref: "#/components/schemas/SharedAccountSelection" },
+              },
+              required: ["selectedAccount"],
+            },
+          ],
+        },
+        ExportCorpusResult: {
+          type: "object",
+          properties: {
+            accountName: { type: "string" },
+            accountId: { type: "string" },
+            callsFetched: { type: "integer" },
+            callsAfterDedupe: { type: "integer" },
+            duplicatesRemoved: { type: "integer" },
+            markdownDownloadsPath: { type: "string" },
+            output: {
+              type: "object",
+              properties: {
+                callFiles: { type: "array", items: { type: "string" } },
+                mergedFile: { type: "string" },
+                dedupeReport: { type: "string" },
+              },
+              required: ["callFiles", "mergedFile", "dedupeReport"],
+            },
+            storyTypeOptions: {
+              type: "array",
+              items: { $ref: "#/components/schemas/StoryType" },
+            },
+          },
+          required: [
+            "accountName",
+            "accountId",
+            "callsFetched",
+            "callsAfterDedupe",
+            "duplicatesRemoved",
+            "markdownDownloadsPath",
+            "output",
+            "storyTypeOptions",
           ],
         },
         SharedAccountSelection: {

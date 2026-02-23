@@ -30,6 +30,7 @@ export type QuantPriority =
 export interface UseCaseSpec {
   objective: string;
   narrativeAngle: string;
+  backendPromptTemplate: string;
   primaryAudience: string[];
   requiredEvidenceSignals: EvidenceSignal[];
   quantitativePriority: QuantPriority[];
@@ -79,6 +80,8 @@ const COMMON_FORBIDDEN_MOVES = [
 const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narrativeAngle">> = {
   TOFU: {
     primaryAudience: ["Product Marketing", "Content Marketing", "Demand Generation"],
+    backendPromptTemplate:
+      "Frame this as an awareness-stage narrative grounded in timeline evidence, customer context, and attributable observations.",
     requiredEvidenceSignals: ["before_after", "timeline", "stakeholder_perspective"],
     quantitativePriority: ["adoption", "risk", "efficiency", "other"],
     requiredSections: [...REQUIRED_SECTIONS],
@@ -93,6 +96,8 @@ const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narra
   },
   MOFU: {
     primaryAudience: ["Sales Engineering", "Solutions Consulting", "Product Marketing"],
+    backendPromptTemplate:
+      "Frame this as an evaluation-stage proof narrative emphasizing implementation details, decision tradeoffs, and attributable technical outcomes.",
     requiredEvidenceSignals: [
       "implementation_detail",
       "timeline",
@@ -113,6 +118,8 @@ const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narra
   },
   BOFU: {
     primaryAudience: ["AEs", "Revenue Leadership", "Executive Sponsors"],
+    backendPromptTemplate:
+      "Frame this as a decision-stage business case with explicit quantified outcomes, assumptions, and confidence labeling.",
     requiredEvidenceSignals: ["quant_claim", "before_after", "timeline", "risk_control"],
     quantitativePriority: ["roi", "cost_savings", "revenue", "time_saved", "risk"],
     requiredSections: [...REQUIRED_SECTIONS],
@@ -127,6 +134,8 @@ const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narra
   },
   POST_SALE: {
     primaryAudience: ["Customer Success", "Account Management", "Product"],
+    backendPromptTemplate:
+      "Frame this as a post-sale growth narrative covering adoption trajectory, retention signals, and expansion outcomes with attribution.",
     requiredEvidenceSignals: ["timeline", "implementation_detail", "stakeholder_perspective", "quant_claim"],
     quantitativePriority: ["adoption", "efficiency", "risk", "time_saved", "other"],
     requiredSections: [...REQUIRED_SECTIONS],
@@ -141,6 +150,8 @@ const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narra
   },
   INTERNAL: {
     primaryAudience: ["Sales Leadership", "RevOps", "Delivery Leadership"],
+    backendPromptTemplate:
+      "Frame this as an internal enablement brief with concrete lessons, operational implications, and actionable next steps.",
     requiredEvidenceSignals: ["stakeholder_perspective", "implementation_detail", "timeline", "quant_claim"],
     quantitativePriority: ["efficiency", "error_reduction", "adoption", "time_saved", "other"],
     requiredSections: [...REQUIRED_SECTIONS],
@@ -155,6 +166,8 @@ const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narra
   },
   VERTICAL: {
     primaryAudience: ["Industry GTM", "Field Marketing", "Strategic Sales"],
+    backendPromptTemplate:
+      "Frame this as a segment-specific narrative that highlights vertical constraints, regulatory nuances, and attributable outcomes.",
     requiredEvidenceSignals: ["stakeholder_perspective", "quant_claim", "risk_control", "before_after"],
     quantitativePriority: ["risk", "adoption", "roi", "efficiency", "other"],
     requiredSections: [...REQUIRED_SECTIONS],
@@ -169,6 +182,8 @@ const STAGE_PROFILE: Record<UseCaseStage, Omit<UseCaseSpec, "objective" | "narra
   },
   FORMAT: {
     primaryAudience: ["Content Team", "Executive Comms", "Field Marketing"],
+    backendPromptTemplate:
+      "Frame this in a reusable content format with concise evidence density and highly attributable quote/metric packaging.",
     requiredEvidenceSignals: ["before_after", "quant_claim", "stakeholder_perspective", "timeline"],
     quantitativePriority: ["roi", "cost_savings", "revenue", "efficiency", "other"],
     requiredSections: [...REQUIRED_SECTIONS],

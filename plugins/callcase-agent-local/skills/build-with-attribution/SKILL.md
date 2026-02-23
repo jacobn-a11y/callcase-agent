@@ -9,6 +9,7 @@ Use this skill when generating a case study for one selected account.
 3. Return:
    - generated story markdown
    - downloads file paths
+   - quotes CSV path
    - dedupe counts
    - quotes/claims extraction totals
 
@@ -17,3 +18,4 @@ Use this skill when generating a case study for one selected account.
 - Quote summaries must retain speaker + source call + timestamp when available.
 - Financial claims must be traceable to explicit evidence quotes.
 - If evidence is weak, highlight gaps and confidence limits.
+- Include these CSV columns in output expectations: `speaker`, `date`, `call_time`, `quote`, `why_included`.

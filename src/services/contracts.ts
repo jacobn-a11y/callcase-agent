@@ -50,5 +50,10 @@ export const BuildRequestSchema = BaseRequestSchema.safeExtend({
   selectedAccount: SelectedAccountSchema,
 });
 
+export const ExportRequestSchema = BaseRequestSchema.safeExtend({
+  selectedAccount: SelectedAccountSchema,
+});
+
 export type DiscoverRequest = z.infer<typeof DiscoverRequestSchema>;
 export type BuildRequest = z.infer<typeof BuildRequestSchema>;
+export type ExportRequest = z.infer<typeof ExportRequestSchema>;

@@ -29,6 +29,7 @@ API routes:
 
 - `GET /api/story-types`
 - `POST /api/accounts/discover`
+- `POST /api/accounts/export-markdown`
 - `POST /api/stories/build`
 - `GET /openapi.json`
 - `GET /.well-known/ai-plugin.json`
@@ -42,6 +43,18 @@ API routes:
 - minimum quote/claim thresholds
 - required output sections
 - forbidden moves
+
+Expected Claude flow:
+
+1. Discover shared accounts
+2. Export merged markdown corpus for selected account (`/api/accounts/export-markdown`)
+3. Show story types by category and ask user to choose one
+4. Build story and quote CSV (`/api/stories/build`)
+
+Account-name matching:
+
+- Plugin supports fuzzy account input (`accountDisplayName`) and resolves the closest shared account when confidence is sufficient.
+- Exact account slug/id input is not required.
 
 ## ChatGPT Integration (Custom GPT Actions)
 
@@ -158,6 +171,15 @@ Primary:
 
 - `~/Downloads/<Account Name>.md`
 - `~/Downloads/<Account Name> - <Story Type>.md`
+- `~/Downloads/<Account Name> - <Story Type> - Quotes.csv`
+
+Quotes CSV columns:
+
+- `speaker`
+- `date`
+- `call_time`
+- `quote`
+- `why_included`
 
 Diagnostics:
 
