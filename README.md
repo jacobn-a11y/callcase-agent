@@ -93,6 +93,11 @@ Direct GitHub download link:
 
 - `https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.zip`
 
+Claude upload-ready format:
+
+- This ZIP is already in Claude-compatible upload format.
+- Do not unzip before uploading.
+
 Rebuild the zip from source:
 
 ```bash
@@ -107,6 +112,27 @@ How to use it in Claude:
 4. Upload and enable the plugin.
 5. If your repo path differs from this machine, edit `plugins/callcase-agent-local/.mcp.json` (`CALLCASE_REPO_PATH`) and rebuild zip.
 6. Ensure your keys exist in `.env` (or pass them in tool args).
+
+Config snippet (`.mcp.json`) used by the upload ZIP:
+
+```json
+{
+  "mcpServers": {
+    "callcase-agent": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/run-callcase-mcp.sh",
+      "args": ["--repo", "${CALLCASE_REPO_PATH}"],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}",
+      "env": {
+        "CALLCASE_REPO_PATH": "/Users/jacobnikolau/Documents/Codex/callcase-agent"
+      }
+    }
+  }
+}
+```
+
+More detailed upload/config instructions:
+
+- `docs/claude-plugin-upload.md`
 
 ## Claude Integration (MCP Server)
 
@@ -136,6 +162,7 @@ MCP tools exposed:
 
 - `list_story_types`
 - `discover_shared_accounts`
+- `prepare_account_corpus`
 - `build_story_for_account`
 
 `build_story_for_account` accepts either:

@@ -19,6 +19,10 @@ This plugin connects Claude to the local CallCase MCP server in this repo.
    - `GONG_ACCESS_TOKEN` or `GONG_ACCESS_KEY` + `GONG_ACCESS_KEY_SECRET`
    - `GRAIN_API_TOKEN`
 
+`CALLCASE_REPO_PATH` default in this bundle:
+
+- `/Users/jacobnikolau/Documents/Codex/callcase-agent`
+
 ## Runtime behavior
 
 The launcher script starts:

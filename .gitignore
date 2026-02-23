@@ -4,3 +4,4 @@ dist/
 output/
 coverage/
 .DS_Store
+plugins/callcase-agent-local-plugin/
