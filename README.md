@@ -1,78 +1,124 @@
-# CallCase Agent Webapp
+# CallCase Agent
 
-Simple local webapp to:
+Local-first app to consolidate Gong + Grain call transcripts, dedupe overlap, extract attributed evidence, and generate case-study markdown variants.
 
-1. Enter Gong + Grain + OpenAI keys
-2. Discover deduped shared accounts/companies across Gong and Grain
-3. Choose account + story type
-4. Build the story
-5. Write merged call markdown to your Downloads folder as:
-   - `~/Downloads/<Account Name>.md`
+## What You Get
 
-It also writes the generated story markdown to Downloads as:
+- Shared account discovery across **both Gong and Grain** (exact + fuzzy + optional LLM reconciliation)
+- Story generation for your full funnel taxonomy
+- Direct attribution in extracted evidence:
+  - speaker
+  - source call id/title/date
+  - source timestamp (ms)
+- Markdown outputs:
+  - `~/Downloads/<Account Name>.md`
+  - `~/Downloads/<Account Name> - <Story Type>.md`
 
-- `~/Downloads/<Account Name> - <Story Type>.md`
-
-## Quick Start
+## Run The Web App
 
 ```bash
 npm install
-npm run dev
+npm run web
 ```
 
 Open:
 
 - `http://localhost:3080`
 
-## UI Flow
+API routes:
 
-1. Paste credentials in the web form.
-2. Click **Discover Shared Accounts**.
-3. Pick one account from the shared Gong+Grain menu.
-4. Pick a story type.
-5. Click **Build Story**.
+- `GET /api/story-types`
+- `POST /api/accounts/discover`
+- `POST /api/stories/build`
+- `GET /openapi.json`
+- `GET /.well-known/ai-plugin.json`
 
-## What Happens Under the Hood
+## ChatGPT Integration (Custom GPT Actions)
 
-- Pulls calls/transcripts from Gong and Grain.
-- Matches account/company names across both providers using:
-  - exact normalization
-  - heuristic fuzzy matching
-  - optional OpenAI-assisted reconciliation for unresolved names
-- Merges and de-duplicates duplicate calls across providers.
-- Extracts verbatim quotes + quantitative claims with attribution:
-  - `speaker`
-  - `sourceCallId`
-  - `sourceCallTitle`
-  - `sourceCallDate`
-  - `sourceTimestampMs`
-- Generates a case-study markdown for the selected story type.
+Use this when you want a ChatGPT app/skill experience.
 
-## Output Files
+1. Start the server: `npm run web`
+2. Expose it publicly over HTTPS (example):
+   - `cloudflared tunnel --url http://localhost:3080`
+3. In ChatGPT, create/edit your Custom GPT and add an **Action**.
+4. Use schema URL:
+   - `https://<your-public-domain>/openapi.json`
+5. Save and test actions:
+   - `listStoryTypes`
+   - `discoverSharedAccounts`
+   - `buildCaseStudyStory`
 
-Primary outputs in Downloads:
+Notes:
+
+- Credentials are request parameters. You can pass Gong/Grain/OpenAI keys per call.
+- This repo also exposes `/.well-known/ai-plugin.json` for plugin-compatible tooling.
+
+## Claude Integration (MCP Server)
+
+Use this when you want a Claude plugin/connector workflow.
+
+1. Start MCP server command:
+   - `npm run mcp`
+2. Add this to Claude Desktop config:
+   - macOS path:
+     - `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+Example config:
+
+```json
+{
+  "mcpServers": {
+    "callcase-agent": {
+      "command": "npm",
+      "args": ["run", "mcp"],
+      "cwd": "/Users/jacobnikolau/Documents/Codex/callcase-agent"
+    }
+  }
+}
+```
+
+MCP tools exposed:
+
+- `list_story_types`
+- `discover_shared_accounts`
+- `build_story_for_account`
+
+`build_story_for_account` accepts either:
+
+- `selectedAccount` object from discovery output, or
+- `accountDisplayName` (it resolves to the best shared account match)
+
+## Optional Environment Defaults
+
+You can keep using UI-entered credentials, but MCP can also pull defaults from `.env`:
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+- `GONG_BASE_URL`
+- `GONG_ACCESS_TOKEN`
+- `GONG_ACCESS_KEY`
+- `GONG_ACCESS_KEY_SECRET`
+- `GRAIN_BASE_URL`
+- `GRAIN_API_TOKEN`
+- `INTERNAL_EMAIL_DOMAINS`
+- `PORT`
+
+## Build & Test
+
+```bash
+npm run build
+npm test
+```
+
+## Output Paths
+
+Primary:
 
 - `~/Downloads/<Account Name>.md`
 - `~/Downloads/<Account Name> - <Story Type>.md`
 
-Additional diagnostic outputs in repo workspace:
+Diagnostics:
 
 - `output-web/<account>/calls/*.md`
 - `output-web/<account>/merged/all-calls.md`
 - `output-web/<account>/dedupe/duplicates.json`
-
-## Environment (Optional Defaults)
-
-You can still set defaults in `.env`:
-
-- `PORT` (default `3080`)
-
-Credentials are entered directly in the UI and are not persisted by the app.
-
-## CLI (Optional)
-
-Legacy CLI remains available:
-
-```bash
-npm run cli -- --provider gong_grain --account-name "Acme"
-```
