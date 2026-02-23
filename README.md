@@ -76,10 +76,12 @@ Notes:
 - Credentials are request parameters. You can pass Gong/Grain/OpenAI keys per call.
 - This repo also exposes `/.well-known/ai-plugin.json` for plugin-compatible tooling.
 
-## Claude Local Plugin ZIP (Upload Flow)
+## Claude Upload Bundles (MCPB / DXT / ZIP)
 
-Prebuilt plugin zip in this repo:
+Prebuilt upload bundles in this repo:
 
+- `plugins/callcase-agent-local-plugin.mcpb`
+- `plugins/callcase-agent-local-plugin.dxt`
 - `plugins/callcase-agent-local-plugin.zip`
 
 Plugin bundle contents:
@@ -89,26 +91,34 @@ Plugin bundle contents:
 - dedicated agent (`agents/callcase-operator.md`)
 - reusable skills for discovery/build workflows (`skills/*`)
 
-Direct GitHub download link:
+Direct GitHub download links:
 
+- `https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.mcpb`
+- `https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.dxt`
 - `https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.zip`
 
 Claude upload-ready format:
 
-- This ZIP is already in Claude-compatible upload format.
-- Do not unzip before uploading.
+- Prefer `.mcpb` or `.dxt` if your Claude build requires those file types.
+- `.zip` is kept for compatibility with older upload flows.
+- Do not unzip any bundle before uploading.
 
-Rebuild the zip from source:
+Rebuild bundles from source:
 
 ```bash
 npm run plugin:build
 ```
 
+`npm run plugin:build` generates all three artifacts (`.mcpb`, `.dxt`, `.zip`).
+
 How to use it in Claude:
 
 1. Open Claude plugin upload.
 2. Click **Browse files**.
-3. Select `callcase-agent-local-plugin.zip`.
+3. Select one bundle:
+   - `callcase-agent-local-plugin.mcpb`
+   - or `callcase-agent-local-plugin.dxt`
+   - or `callcase-agent-local-plugin.zip` (legacy-compatible)
 4. Upload and enable the plugin.
 5. If your repo path differs from this machine, edit `plugins/callcase-agent-local/.mcp.json` (`CALLCASE_REPO_PATH`) and rebuild zip.
 6. Ensure your keys exist in `.env` (or pass them in tool args).

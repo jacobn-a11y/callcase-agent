@@ -1,17 +1,27 @@
 # Claude Plugin Upload + Config
 
-This repo ships a direct-upload ZIP for Claude:
+This repo ships direct-upload bundles for Claude:
 
+- [callcase-agent-local-plugin.mcpb](https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.mcpb)
+- [callcase-agent-local-plugin.dxt](https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.dxt)
 - [callcase-agent-local-plugin.zip](https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.zip)
 
 ## Upload steps
 
 1. Open Claude plugin manager.
 2. Choose **Upload local plugin**.
-3. Select `callcase-agent-local-plugin.zip`.
+3. Select one bundle:
+   - `callcase-agent-local-plugin.mcpb` (preferred)
+   - or `callcase-agent-local-plugin.dxt`
+   - or `callcase-agent-local-plugin.zip` (legacy-compatible)
 4. Enable the plugin.
 
-The ZIP is already in Claude plugin format. Do not unzip it for upload.
+Bundles are upload-ready. Do not unzip before upload.
+
+When uploading `.mcpb` or `.dxt`, Claude may prompt for `user_config` values from `manifest.json`.
+Set at minimum:
+
+- `callcase_repo_path` (absolute path to your local clone)
 
 ## Required config
 
@@ -36,7 +46,7 @@ If your local repo path is different, update `CALLCASE_REPO_PATH` in:
 
 - `plugins/callcase-agent-local/.mcp.json`
 
-Then rebuild ZIP:
+Then rebuild bundles:
 
 ```bash
 npm run plugin:build

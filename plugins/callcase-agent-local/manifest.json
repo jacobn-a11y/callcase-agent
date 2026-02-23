@@ -1,0 +1,125 @@
+{
+  "manifest_version": "0.3",
+  "name": "callcase-agent-local",
+  "display_name": "CallCase Agent (Local)",
+  "version": "1.1.0",
+  "description": "Consolidate Gong + Grain calls, export markdown corpus, and generate attributed case studies with quote CSV output.",
+  "author": {
+    "name": "Jacob Nikolau",
+    "url": "https://github.com/jacobn-a11y/callcase-agent"
+  },
+  "homepage": "https://github.com/jacobn-a11y/callcase-agent",
+  "documentation": "https://github.com/jacobn-a11y/callcase-agent/blob/main/docs/claude-plugin-upload.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacobn-a11y/callcase-agent.git"
+  },
+  "keywords": [
+    "mcp",
+    "gong",
+    "grain",
+    "transcript",
+    "case-study",
+    "attribution"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "claude_desktop": ">=0.8.0",
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "scripts/run-callcase-mcp.sh",
+    "mcp_config": {
+      "command": "${__dirname}/scripts/run-callcase-mcp.sh",
+      "args": [
+        "--repo",
+        "${user_config.callcase_repo_path}"
+      ],
+      "env": {
+        "OPENAI_API_KEY": "${user_config.openai_api_key}",
+        "OPENAI_MODEL": "${user_config.openai_model}",
+        "GONG_ACCESS_TOKEN": "${user_config.gong_access_token}",
+        "GONG_ACCESS_KEY": "${user_config.gong_access_key}",
+        "GONG_ACCESS_KEY_SECRET": "${user_config.gong_access_key_secret}",
+        "GRAIN_API_TOKEN": "${user_config.grain_api_token}",
+        "INTERNAL_EMAIL_DOMAINS": "${user_config.internal_email_domains}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_story_types",
+      "description": "List story templates grouped by funnel category and output spec."
+    },
+    {
+      "name": "discover_shared_accounts",
+      "description": "Find shared account/company options across Gong and Grain."
+    },
+    {
+      "name": "prepare_account_corpus",
+      "description": "Export all-call markdown corpus to Downloads before story selection."
+    },
+    {
+      "name": "build_story_for_account",
+      "description": "Generate story markdown in chat and write story + quotes CSV to Downloads."
+    }
+  ],
+  "user_config": {
+    "callcase_repo_path": {
+      "type": "directory",
+      "title": "CallCase Repo Path",
+      "description": "Absolute local path to the callcase-agent repository.",
+      "required": true,
+      "default": "/Users/jacobnikolau/Documents/Codex/callcase-agent"
+    },
+    "openai_api_key": {
+      "type": "string",
+      "title": "OpenAI API Key",
+      "description": "Optional default OpenAI API key used if not supplied in tool calls.",
+      "sensitive": true
+    },
+    "openai_model": {
+      "type": "string",
+      "title": "OpenAI Model",
+      "description": "Optional default model (for example gpt-4o).",
+      "default": "gpt-4o"
+    },
+    "gong_access_token": {
+      "type": "string",
+      "title": "Gong Access Token",
+      "description": "Optional default Gong bearer token.",
+      "sensitive": true
+    },
+    "gong_access_key": {
+      "type": "string",
+      "title": "Gong Access Key",
+      "description": "Optional default Gong access key when not using bearer token.",
+      "sensitive": true
+    },
+    "gong_access_key_secret": {
+      "type": "string",
+      "title": "Gong Access Key Secret",
+      "description": "Optional default Gong access key secret when not using bearer token.",
+      "sensitive": true
+    },
+    "grain_api_token": {
+      "type": "string",
+      "title": "Grain API Token",
+      "description": "Optional default Grain API token.",
+      "sensitive": true
+    },
+    "internal_email_domains": {
+      "type": "string",
+      "title": "Internal Email Domains",
+      "description": "Comma-separated internal domains to exclude from customer account inference."
+    }
+  }
+}
