@@ -53,6 +53,24 @@ Notes:
 - Credentials are request parameters. You can pass Gong/Grain/OpenAI keys per call.
 - This repo also exposes `/.well-known/ai-plugin.json` for plugin-compatible tooling.
 
+## Claude Local Plugin ZIP (Upload Flow)
+
+Prebuilt plugin zip in this repo:
+
+- `plugins/callcase-agent-local-plugin.zip`
+
+Direct GitHub download link:
+
+- `https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.zip`
+
+How to use it in Claude:
+
+1. Open Claude plugin upload.
+2. Click **Browse files**.
+3. Select `callcase-agent-local-plugin.zip`.
+4. Upload and enable the plugin.
+5. Ensure your keys exist in `.env` (or pass them in tool args).
+
 ## Claude Integration (MCP Server)
 
 Use this when you want a Claude plugin/connector workflow.

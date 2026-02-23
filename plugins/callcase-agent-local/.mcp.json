@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "callcase-agent": {
+      "command": "npm",
+      "args": [
+        "run",
+        "mcp"
+      ],
+      "cwd": "/Users/jacobnikolau/Documents/Codex/callcase-agent"
+    }
+  }
+}

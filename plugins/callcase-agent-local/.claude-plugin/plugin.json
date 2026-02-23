@@ -1,0 +1,5 @@
+{
+  "name": "callcase-agent-local",
+  "version": "1.0.0",
+  "description": "Local CallCase MCP plugin bundle for Claude."
+}
