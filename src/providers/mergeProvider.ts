@@ -1,5 +1,14 @@
 import { z } from "zod";
-import type { CanonicalCall, CallProvider, ProviderFetchInput } from "../types/domain.js";
+import {
+  accountIdFromName,
+  normalizeAccountName,
+} from "./account-utils.js";
+import type {
+  CanonicalCall,
+  CallProvider,
+  DiscoveredAccount,
+  ProviderFetchInput,
+} from "../types/domain.js";
 
 const MergeParticipantSchema = z.object({
   name: z.string().nullable().optional(),
@@ -36,6 +45,15 @@ export class MergeProvider implements CallProvider {
   constructor(private readonly config: MergeProviderConfig) {}
 
   async fetchCalls(input: ProviderFetchInput): Promise<CanonicalCall[]> {
+    const targetAccountName = input.accountName?.trim();
+    if (targetAccountName) {
+      const wanted = normalizeAccountName(targetAccountName);
+      const own = normalizeAccountName(this.config.accountName);
+      if (wanted !== own) {
+        return [];
+      }
+    }
+
     const maxCalls = input.maxCalls ?? 500;
     const allCalls: CanonicalCall[] = [];
 
@@ -119,4 +137,19 @@ export class MergeProvider implements CallProvider {
 
     return allCalls.sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
   }
+
+  async discoverAccounts(): Promise<DiscoveredAccount[]> {
+    return [
+      {
+        name: this.config.accountName,
+        normalizedName: normalizeAccountName(this.config.accountName),
+        source: "merge",
+        callCount: 0,
+      },
+    ];
+  }
+}
+
+export function buildMergeAccountId(accountName: string): string {
+  return accountIdFromName(accountName);
 }

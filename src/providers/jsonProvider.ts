@@ -1,6 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
-import type { CanonicalCall, CallProvider, ProviderFetchInput } from "../types/domain.js";
+import { normalizeAccountName } from "./account-utils.js";
+import type {
+  CanonicalCall,
+  CallProvider,
+  DiscoveredAccount,
+  ProviderFetchInput,
+} from "../types/domain.js";
 
 const SegmentSchema = z.object({
   speaker: z.string().nullable().default(null),
@@ -39,14 +45,46 @@ export class JsonProvider implements CallProvider {
   constructor(private readonly filePath: string) {}
 
   async fetchCalls(input: ProviderFetchInput): Promise<CanonicalCall[]> {
-    const raw = await readFile(this.filePath, "utf8");
-    const parsed = CallsFileSchema.parse(JSON.parse(raw));
+    const parsed = await this.load();
+    const targetAccountName = input.accountName ? normalizeAccountName(input.accountName) : null;
 
     return parsed.calls
       .filter((call) => (input.accountId ? call.accountId === input.accountId : true))
+      .filter((call) =>
+        targetAccountName ? normalizeAccountName(call.accountName) === targetAccountName : true
+      )
       .filter((call) => (input.fromDate ? call.occurredAt >= input.fromDate : true))
       .filter((call) => (input.toDate ? call.occurredAt <= input.toDate : true))
       .slice(0, input.maxCalls ?? parsed.calls.length)
       .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+  }
+
+  async discoverAccounts(): Promise<DiscoveredAccount[]> {
+    const parsed = await this.load();
+    const counts = new Map<string, { name: string; callCount: number }>();
+
+    for (const call of parsed.calls) {
+      const normalizedName = normalizeAccountName(call.accountName);
+      const current = counts.get(normalizedName);
+      if (!current) {
+        counts.set(normalizedName, { name: call.accountName, callCount: 1 });
+      } else {
+        current.callCount += 1;
+      }
+    }
+
+    return [...counts.entries()]
+      .map(([normalizedName, value]) => ({
+        name: value.name,
+        normalizedName,
+        source: "json",
+        callCount: value.callCount,
+      }))
+      .sort((a, b) => b.callCount - a.callCount || a.name.localeCompare(b.name));
+  }
+
+  private async load(): Promise<z.infer<typeof CallsFileSchema>> {
+    const raw = await readFile(this.filePath, "utf8");
+    return CallsFileSchema.parse(JSON.parse(raw));
   }
 }

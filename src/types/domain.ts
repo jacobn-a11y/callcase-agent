@@ -40,7 +40,16 @@ export interface QuoteEvidence {
 
 export interface QuantClaim {
   claim: string;
-  claimType: "cost_savings" | "revenue" | "time_saved" | "efficiency" | "error_reduction" | "adoption" | "risk" | "roi" | "other";
+  claimType:
+    | "cost_savings"
+    | "revenue"
+    | "time_saved"
+    | "efficiency"
+    | "error_reduction"
+    | "adoption"
+    | "risk"
+    | "roi"
+    | "other";
   value: string;
   unit: string | null;
   sourceCallId: string;
@@ -57,25 +66,44 @@ export interface CaseStudyArtifact {
   markdown: string;
 }
 
+export interface DuplicateResolution {
+  keptCallId: string;
+  keptProvider: string;
+  droppedCallId: string;
+  droppedProvider: string;
+  reason: string;
+}
+
 export interface AgentRunResult {
   accountId: string;
   accountName: string;
   callsProcessed: number;
+  duplicatesRemoved: number;
   callsMarkdownPaths: string[];
   mergedMarkdownPath: string;
   quotesPath: string;
   claimsPath: string;
+  dedupeReportPath: string;
   caseStudyPaths: string[];
 }
 
 export interface ProviderFetchInput {
   accountId?: string;
+  accountName?: string;
   fromDate?: string;
   toDate?: string;
   maxCalls?: number;
 }
 
+export interface DiscoveredAccount {
+  name: string;
+  normalizedName: string;
+  source: string;
+  callCount: number;
+}
+
 export interface CallProvider {
   name: string;
   fetchCalls(input: ProviderFetchInput): Promise<CanonicalCall[]>;
+  discoverAccounts?(input: ProviderFetchInput): Promise<DiscoveredAccount[]>;
 }
