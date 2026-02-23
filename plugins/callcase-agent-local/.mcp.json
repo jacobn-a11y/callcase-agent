@@ -1,12 +1,15 @@
 {
   "mcpServers": {
     "callcase-agent": {
-      "command": "npm",
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/run-callcase-mcp.sh",
       "args": [
-        "run",
-        "mcp"
+        "--repo",
+        "${CALLCASE_REPO_PATH}"
       ],
-      "cwd": "/Users/jacobnikolau/Documents/Codex/callcase-agent"
+      "cwd": "${CLAUDE_PLUGIN_ROOT}",
+      "env": {
+        "CALLCASE_REPO_PATH": "/Users/jacobnikolau/Documents/Codex/callcase-agent"
+      }
     }
   }
 }

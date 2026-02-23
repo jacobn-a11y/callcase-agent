@@ -9,6 +9,7 @@
     "dev": "tsx src/webapp/server.ts",
     "web": "tsx src/webapp/server.ts",
     "mcp": "tsx src/mcp/server.ts",
+    "plugin:build": "bash scripts/build-claude-plugin.sh",
     "cli": "tsx src/index.ts",
     "start": "tsx src/webapp/server.ts",
     "test": "vitest run"

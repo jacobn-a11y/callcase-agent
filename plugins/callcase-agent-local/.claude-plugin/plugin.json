@@ -1,5 +1,20 @@
 {
   "name": "callcase-agent-local",
   "version": "1.0.0",
-  "description": "Local CallCase MCP plugin bundle for Claude."
+  "description": "Local CallCase MCP plugin bundle for attributable transcript consolidation and case-study generation.",
+  "author": "Jacob Nikolau",
+  "homepage": "https://github.com/jacobn-a11y/callcase-agent",
+  "repository": "https://github.com/jacobn-a11y/callcase-agent",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "call-recording",
+    "gong",
+    "grain",
+    "case-study",
+    "attribution"
+  ],
+  "mcpServers": "./.mcp.json",
+  "skills": "./skills/",
+  "agents": "./agents/"
 }

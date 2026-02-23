@@ -69,9 +69,22 @@ Prebuilt plugin zip in this repo:
 
 - `plugins/callcase-agent-local-plugin.zip`
 
+Plugin bundle contents:
+
+- MCP launcher script (`scripts/run-callcase-mcp.sh`)
+- `.mcp.json` wiring for local server startup
+- dedicated agent (`agents/callcase-operator.md`)
+- reusable skills for discovery/build workflows (`skills/*`)
+
 Direct GitHub download link:
 
 - `https://github.com/jacobn-a11y/callcase-agent/raw/main/plugins/callcase-agent-local-plugin.zip`
+
+Rebuild the zip from source:
+
+```bash
+npm run plugin:build
+```
 
 How to use it in Claude:
 
@@ -79,7 +92,8 @@ How to use it in Claude:
 2. Click **Browse files**.
 3. Select `callcase-agent-local-plugin.zip`.
 4. Upload and enable the plugin.
-5. Ensure your keys exist in `.env` (or pass them in tool args).
+5. If your repo path differs from this machine, edit `plugins/callcase-agent-local/.mcp.json` (`CALLCASE_REPO_PATH`) and rebuild zip.
+6. Ensure your keys exist in `.env` (or pass them in tool args).
 
 ## Claude Integration (MCP Server)
 
